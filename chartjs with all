@@ -1,0 +1,223 @@
+
+
+@{
+    ViewBag.Title = "Welcome To " + ViewBag.Dashboard;
+    //Layout = "~/Views/Shared/_LayoutWoutNav.cshtml";
+    Layout = "~/Views/Shared/_LayoutDepartment.cshtml";
+    string[] fruits = new string[] { ViewBag.Newmonths };
+
+
+    string faIcon = string.Format("<i class='fa fa-reply' aria-hidden='true'></i> Back");
+    string hyperLink = Html.ActionLink("linkTitle", "DashboardClient", "Home", new { area = "ClientArea" }, new { @class = "headerbacklink" }).ToString();
+    ViewBag.TitleBackBtn = new HtmlString(hyperLink.ToString().Replace("linkTitle", faIcon));
+}
+
+@section DisplayTitle{ @Html.Partial("_DisplayTitle") }
+@section DisplayErrorMessage{ @Html.Partial("_DisplayErrorMessage") }
+<div class="row">
+    <div class="col-md-2">
+        @*ViewBag.totalcases= String.Join(",", list.Select(o => o.totalCases));
+            ViewBag.ActiveCases = String.Join(",", list.Select(o => o.ActiveCases));
+            ViewBag.Stoped = String.Join(",", list.Select(o => o.Stoped));
+            ViewBag.month = String.Join(",", list.Select(o => o.month));*@
+
+
+
+        <input type="hidden" id="Hftotalcases" value=@ViewBag.totalcases />
+        <input type="hidden" id="HfActiveCases" value=@ViewBag.ActiveCases />
+        <input type="hidden" id="HfStoped" value=@ViewBag.Stoped />
+        <input type="hidden" id="Hfmonths" value=@ViewBag.Newmonths />
+
+    </div>
+    <div class="col-md-10" style="padding-left:2%;margin-top:1.5%;">
+        <div class="tab-pane" id="revDashboard" role="tabpanel">
+            <div class="content" style="padding:1% 2%;">
+                
+                <div class="row">
+                    <style>
+                        .thead {
+                            background: #797979;
+                            color: #fff;
+                        }
+
+                        th {
+                            text-align: center;
+                            padding: 5px;
+                            font-size: 14px;
+                        }
+
+                        td {
+                            padding: 5px;
+                        }
+                    </style>
+                    <div class="col-md-9">
+                        <div class="card ">
+                            <div class="card-header ">
+                                <h4 class="text-center"> Color Wise Check Report </h4>
+                            </div>
+                            <div class="card-body ">
+                                @*<div id="Barchart"></div>*@
+                                @*<canvas id="myChart"></canvas>*@
+                                @*<div id="columnchart_material" style="width: 800px; height: 500px;"></div>*@
+                                <canvas id="colorCanvas"></canvas>
+                                @*<canvas id=chartHours width="400" height="100"></canvas>*@
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div id="trendChecktable">
+                            <table border="1" width="100%" id="table">
+                                <tr class="thead">
+                                    <th align="center">Months</th>
+                                    <th align="center">WIP</th>
+                                    <th align="center">Orange</th>
+                                    <th align="center">Green</th>
+                                    <th align="center">Red</th>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src='@Url.Content("~/Scripts/modernizr-2.8.3.js")'></script>
+
+<script src='@Url.Content("~/Scripts/jquery-3.1.1.min.js")'></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src='@Url.Content("~/Scripts/DisableBackForwordBtn.js")'></script>
+<script src='@Url.Content("~/Scripts/DisableBackForwordBtn.js")'></script>
+<script src='@Url.Content("~/Scripts/bootstrap.min.js")'></script>
+<script src='@Url.Content("~/Content/newscripts/chartjs.js")'></script>
+
+@*<script src='@Url.Content("~/Content/newscripts/demo.js")'></script>*@
+<script src="~/Content/newscripts/propermin.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: "/ClientArea/Home/ColorBarChart",
+            method: "GET",
+            success: function (data) {
+                console.log(data);
+                var InitionMonth = [];
+                var WIP = [];
+                var Orange = [];
+                var Green = [];
+                var Red = [];
+                for (var i in data) {
+                    InitionMonth.push(data[i].InitionMonth);
+                    WIP.push(data[i].WIP);
+                    Orange.push(data[i].Orange);
+                    Green.push(data[i].Green);
+                    Red.push(data[i].Red);
+
+                }
+                //table code
+                var tr;
+                for (var j = 0; j < data.length; j++) {
+                    tr = $('<tr/>');
+                    tr.append("<td>" + InitionMonth[j] + "</td>");
+                    tr.append("<td>" + WIP[j] + "</td>");
+                    tr.append("<td>" + Orange[j] + "</td>");
+                    tr.append("<td>" + Green[j] + "</td>");
+                    tr.append("<td>" + Red[j] + "</td>");
+                    $('#table').append(tr);
+                }
+                //tablecode ends
+
+                var chartdata = {
+                    labels: InitionMonth,
+                    datasets: [
+                        {
+                            label: 'Wip',
+                            backgroundColor: '#146EB4',
+                            borderColor: '#146EB4',
+                            hoverBackgroundColor: 'rgb(48, 219, 219)',
+                            hoverBorderColor: 'rgb(48, 219, 219)',
+                            data: WIP
+                        },
+                        {
+                            label: 'Orange',
+                            backgroundColor: '#FF4500',
+                            borderColor: '#FF4500',
+                            hoverBackgroundColor: 'rgb(186, 201, 209)',
+                            hoverBorderColor: 'rgb(186, 201, 209)',
+                            data: Orange
+                        },
+                        {
+                            label: 'Green',
+                            backgroundColor: '#008000',
+                            borderColor: '#008000',
+                            hoverBackgroundColor: 'rgb(129, 209, 154)',
+                            hoverBorderColor: 'rgb(129, 209, 154) ',
+                            data: Green
+                        },
+                        {
+                            label: 'Red',
+                            backgroundColor: '#FF0000',
+                            borderColor: '#FF0000',
+                            hoverBackgroundColor: 'rgb(129, 209, 154)',
+                            hoverBorderColor: 'rgb(129, 209, 154) ',
+                            data: Red
+                        }
+                    ]
+                };
+                var opt = {
+                    events: false,
+                    tooltips: {
+                        enabled: false
+                    },
+                    hover: {
+                        animationDuration: 0
+                    },
+                    animation: {
+                        duration: 1,
+                        onComplete: function () {
+                            var chartInstance = this.chart,
+                                ctx = chartInstance.ctx;
+                            ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'bottom';
+
+                            this.data.datasets.forEach(function (dataset, i) {
+                                var meta = chartInstance.controller.getDatasetMeta(i);
+                                meta.data.forEach(function (bar, index) {
+                                    var data = dataset.data[index];
+                                    ctx.fillText(data, bar._model.x, bar._model.y - 5);
+                                });
+                            });
+                        }
+                    }
+                };
+
+                var ctx = $("#colorCanvas");
+
+                var barGraph = new Chart(ctx, {
+                    type: 'bar',
+                    data: chartdata,
+                    options: opt
+                });
+            },
+            error: function (data) {
+                console.log(data);
+            }
+        });
+
+    });
+
+
+</script>
+
+
+
+
+
+
+
+}
+
